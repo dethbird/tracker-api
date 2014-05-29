@@ -57,7 +57,7 @@
 	*         \/     \/   |__|                     \/     \/ 	
 	*/
 	require_once('House/Service/UserService.php');
-	require_once('House/Service/ProgramService.php');
+	require_once('House/Service/ActivityService.php');
 
 
 	/**
@@ -81,11 +81,14 @@
 			
 			$request = $app->request;
 
+
+			// var_dump($request->headers("User-Id"));
+
 			$service = new UserService();
 			// $response = $service->findByApiKey($request->params('api_key'));
-			$response = $service->find($request->params('id'));
+			$response = $service->find($request->headers('User-Id'));
 
-			var_dump($response);
+			//var_dump($response);
 
 			if(!$response->isOk()){
 				
@@ -101,117 +104,68 @@
 
 	$app->get('/hello/:name',  $authenticate($app), function ($name) {
 		global $user;
-    	var_dump($user);
+    	// var_dump($user);
 	});
 
-	$app->post('/auth/', $authenticate($app), function () {
+	// $app->post('/auth/', $authenticate($app), function () {
+	// 	global $app;
+		
+	// 	$request = $app->request;
+
+	// 	$service = new UserService();
+		
+	// 	$response = $service->auth($request->params('email'), $request->params('password'));
+	// 	$app->response->setBody(json_encode($response));
+
+	// 	if(!$response->isOk()){
+	// 		$app->response->setStatus(404);
+	// 		$app->stop();
+	// 	} 
+	// });
+
+	$app->get('/activity/log',  $authenticate($app), function () {
 		global $app;
-		
+		global $user;
+
 		$request = $app->request;
+		$service = new ActivityService();
 
-		$service = new UserService();
-		
-		$response = $service->auth($request->params('email'), $request->params('password'));
-		$app->response->setBody(json_encode($response));
+		$response = $service->getLog(array_merge(array("user_id"=>$user['id']), $request->params()));
 
-		if(!$response->isOk()){
-			$app->response->setStatus(404);
-			$app->stop();
-		} 
-	});
-
-
-	$app->get('/nowplaying/',  $authenticate($app), function () {
-		global $app;
-		
-		$request = $app->request;
-		$service = new ProgramService();
-		
-		$response = $service->nowPlaying();
-		$app->response->setBody(json_encode($response));
-
-		if(!$response->isOk()){
-			$app->response->setStatus(404);
-			$app->stop();
-		}
-	});
-
-	$app->get('/playnow/:uuid/',  $authenticate($app), function ($uuid) {
-		global $app;
-		
-		$request = $app->request;
-		$service = new ProgramService();
-		
-		$response = $service->playNow($uuid);
-		$app->response->setBody(json_encode($response));
-
-		if(!$response->isOk()){
-			$app->halt(404, json_encode($response));
-		}
-	});
-
-	/**
-	* Get all programs from now or timeslot
-	* 
-	* @param $timeslot (optional) (default = now) unix timestamp
-	* @return array //collection of programs
-	*/
-	$app->get('/programs/',  $authenticate($app), function () {
-		global $app;
-		
-		$request = $app->request;
-		$service = new ProgramService();
-		
-		//build criteria
-		$criteria = array();
-		$criteria['timeslot'] = is_null($request->get('timeslot')) ? time() : $request->get('timeslot');
-		
-		$response = $service->find($criteria);
-		$app->response->setBody(json_encode($response));
-
-		if(!$response->isOk()){
-			$app->halt(404, json_encode($response));
-		}
-	});
-
-	$app->get('/programs/:id/',  $authenticate($app), function ($id) {
-		global $app;
-		
-		$request = $app->request;
-		$service = new ProgramService();
-		
-		//build criteria
-		$criteria = array();
-		$criteria['id'] = $id;
-		
-		$response = $service->find($criteria);
 		$app->response->setBody(json_encode($response));
 		
-		if(!$response->isOk()){
-			$app->halt(404, json_encode($response));
-		}
 	});
 
+	$app->post('/activity',  $authenticate($app), function () {
+		global $app;
+		global $user;
 
-	$app->post('/programs/',  $authenticate($app), function () {
+		$request = $app->request;
+		$service = new ActivityService();
+
+
+		$response = $service->create(array_merge(array("user_id"=>$user['id']), $request->params()));
+
+		$app->response->setBody(json_encode($response));
+		
+	});
+
+	$app->get('/activity/type',  $authenticate($app), function () {
 		global $app;
 		global $user;
 		
 		$request = $app->request;
-		$service = new ProgramService();
+		$service = new ActivityService();
 		
-		if ($request->params('id')==='new' ||  $request->params('id')==""){
+		$response = $service->findType(array("user_id"=>$user['id']));
 
-			$service->create(array_merge($request->params(), array("user_id"=>$user['id'])));
-		} else {
-			$service->update($request->params());
-		}
+		$app->response->setBody(json_encode($response));
+
+		if(!$response->isOk()){
+			$app->halt(404, json_encode($response));
+		} 
 
 	});
-
-
-
-	
 
 
 	/**

@@ -1,5 +1,5 @@
 <?php
-require_once("models/Program.php");
+require_once("models/Activity.php");
 require_once("House/Service/BaseService.php");
 
 class ProgramService extends BaseService
@@ -92,16 +92,16 @@ class ProgramService extends BaseService
 
     public function create($params)
     {
-        unset($params['api_key']);
-        unset($params['$$hashKey']);
-        if($params['extension']==""){
-            $params['extension'] = null;
-        }
+        // unset($params['api_key']);
+        // unset($params['$$hashKey']);
+        // if($params['extension']==""){
+        //     $params['extension'] = null;
+        // }
 
         $params['id'] = null;
-        $params['uuid'] = $this->gen_uuid();
+        // $params['uuid'] = $this->gen_uuid();
     
-        return Program::create($params);
+        return Activity::create($params);
     }
 
     public function update($params)
