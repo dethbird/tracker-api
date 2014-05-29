@@ -167,6 +167,22 @@
 
 	});
 
+	$app->post('/activity/type',  $authenticate($app), function () {
+		global $app;
+		global $user;
+
+		// echo "here";
+		// die();
+
+		$request = $app->request;
+		$service = new ActivityService();
+
+		$response = $service->createType(array_merge(array("user_id"=>$user['id']), $request->params()));
+
+		$app->response->setBody(json_encode($response));
+
+	});
+
 
 	/**
 	* __________            ._._._.

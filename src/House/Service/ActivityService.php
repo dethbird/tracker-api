@@ -1,5 +1,6 @@
 <?php
 require_once("models/Activity.php");
+require_once("models/ActivityType.php");
 require_once("House/Service/BaseService.php");
 
 class ActivityService extends BaseService
@@ -49,7 +50,22 @@ class ActivityService extends BaseService
     public function create($params)
     {
     
-        try {$object = Activity::create($params);}
+        try {
+            $object = Activity::create($params);
+        }
+        catch (Exception $e) {
+            print_r($e);
+        }
+        $this->response->setData($object->to_array());
+        return $this->response;
+    }
+
+    public function createType($params)
+    {
+    
+        try {
+            $object = ActivityType::create($params);
+        }
         catch (Exception $e) {
             print_r($e);
         }
