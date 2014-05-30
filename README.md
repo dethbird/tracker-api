@@ -1,4 +1,4 @@
 tracker-api
 ===========
 
-API for the activity tracker
+API for the activity tracker!

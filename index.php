@@ -11,6 +11,7 @@
 	ini_set('error_reporting', E_ALL);
 	ini_set('display_errors', 1);
 	define("APPLICATION_PATH", __DIR__);
+	define("ENVIRONMENT", 'dev'); // dev | prod
 	date_default_timezone_set('America/Los_Angeles');
 
 	// Ensure src/ is on include_path
@@ -36,7 +37,7 @@
  	{
  		$cfg->set_model_directory('models');
  		$cfg->set_connections(array('development' =>
- 		'mysql://tracker:P1zzaP4rty!!!@localhost/tracker?charset=utf8'));
+ 		"mysql://tracker".(ENVIRONMENT=="prod" ? null : "-" . ENVIRONMENT).":P1zzaP4rty!!!@localhost/tracker".(ENVIRONMENT=="prod" ? null : "-" . ENVIRONMENT)."?charset=utf8"));
  	});
 
  	global $app, $user;
