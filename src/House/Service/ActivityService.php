@@ -106,8 +106,12 @@ class ActivityService extends BaseService
 
             $report = new stdClass();
             $report->timeframes = array();
+            $report->ativity_types = array();
 
             foreach ($activities as $activity ){
+
+                $report->ativity_types[$activity->activity_type_id] = $activity->to_array();
+
                 $date = date("Y-m-d", strtotime($activity->date_added));
                 if($currentDate != $date){
                     $currentDate = $date;
@@ -128,15 +132,15 @@ class ActivityService extends BaseService
                     $report->timeframes[$currentDate]['polarity']['bad']++;
                 }
 
-                if(!isset($report->timeframes[$currentDate]['occurrence'][$activity->name])){
-                    $report->timeframes[$currentDate]['occurrence'][$activity->name] = 0;
+                if(!isset($report->timeframes[$currentDate]['occurrence'][$activity->activity_type_id])){
+                    $report->timeframes[$currentDate]['occurrence'][$activity->activity_type_id] = 0;
                 }
-                $report->timeframes[$currentDate]['occurrence'][$activity->name]++;
+                $report->timeframes[$currentDate]['occurrence'][$activity->activity_type_id]++;
 
-                if(!isset($report->timeframes[$currentDate]['quantity'][$activity->name])){
-                    $report->timeframes[$currentDate]['quantity'][$activity->name] = 0;
+                if(!isset($report->timeframes[$currentDate]['quantity'][$activity->activity_type_id])){
+                    $report->timeframes[$currentDate]['quantity'][$activity->activity_type_id] = 0;
                 }
-                $report->timeframes[$currentDate]['quantity'][$activity->name] += $activity->quantity;
+                $report->timeframes[$currentDate]['quantity'][$activity->activity_type_id] += $activity->quantity;
 
             }
 
