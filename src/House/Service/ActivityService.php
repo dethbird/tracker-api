@@ -89,5 +89,61 @@ class ActivityService extends BaseService
     //     return $program;
     // }
 
+    public function report($criteria)
+    {
+        $activities = Activity::find_by_sql('
+            SELECT * 
+            FROM  `activity` 
+            LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id` 
+            WHERE  `activity`.`user_id` = '.$criteria['user_id'].'
+            ORDER BY  `activity`.`date_added` DESC
+        ');
+
+
+        if($criteria['timeframe']=="day"){
+            
+            $currentDate = null;
+
+            $report = new stdClass();
+            $report->timeframes = array();
+
+            foreach ($activities as $activity ){
+                $date = date("Y-m-d", strtotime($activity->date_added));
+                if($currentDate != $date){
+                    $currentDate = $date;
+                    // echo $currentDate." ";
+                    $report->timeframes[$currentDate] = array();
+                    $report->timeframes[$currentDate]['polarity'] = array();
+                    $report->timeframes[$currentDate]['polarity']['good'] = 0;
+                    $report->timeframes[$currentDate]['polarity']['bad'] = 0;
+                    $report->timeframes[$currentDate]['occurrence'] = array();
+                    $report->timeframes[$currentDate]['quantity'] = array();
+                }
+
+                $report->timeframes[$currentDate]['logs'][] = $activity->to_array();
+
+                if($activity->polarity > 0){
+                    $report->timeframes[$currentDate]['polarity']['good']++;
+                } else {
+                    $report->timeframes[$currentDate]['polarity']['bad']++;
+                }
+
+                if(!isset($report->timeframes[$currentDate]['occurrence'][$activity->name])){
+                    $report->timeframes[$currentDate]['occurrence'][$activity->name] = 0;
+                }
+                $report->timeframes[$currentDate]['occurrence'][$activity->name]++;
+
+                if(!isset($report->timeframes[$currentDate]['quantity'][$activity->name])){
+                    $report->timeframes[$currentDate]['quantity'][$activity->name] = 0;
+                }
+                $report->timeframes[$currentDate]['quantity'][$activity->name] += $activity->quantity;
+
+            }
+
+            $this->response->setData($report);
+            return $this->response;
+        }
+    }
+
 
 }

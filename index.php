@@ -183,6 +183,26 @@
 
 	});
 
+	$app->get('/activity/report/by/:timeframe',  $authenticate($app), function ($timeframe) {
+
+		global $app;
+		global $user;
+
+		$request = $app->request;
+		$service = new ActivityService();
+
+		$response = $service->report(array_merge(
+			array(
+				"user_id"=>$user['id'],
+				"timeframe"=>$timeframe
+			), 
+			$request->params()
+		));
+
+		$app->response->setBody(json_encode($response));
+		
+	});
+
 
 	/**
 	* __________            ._._._.
