@@ -16,3 +16,4 @@ app/config/parameters.yml
 composer.phar
 
 composer.lock
+env.ini
