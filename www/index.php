@@ -10,14 +10,14 @@
 	*/
 	ini_set('error_reporting', E_ALL);
 	ini_set('display_errors', 1);
-	define("APPLICATION_PATH", __DIR__);
+	define("APPLICATION_PATH", __DIR__ . "/..");
 	define("ENVIRONMENT", 'dev'); // dev | prod
 	date_default_timezone_set('America/Los_Angeles');
 
 	// Ensure src/ is on include_path
 	set_include_path(implode(PATH_SEPARATOR, array(
-		__DIR__ ,
-	    __DIR__ . '/src',
+		APPLICATION_PATH ,
+	    APPLICATION_PATH . '/src',
 	    get_include_path(),
 	)));
 
@@ -30,12 +30,12 @@
 	*         \/                        \/             \/|__|    
 	*/
 
-	require 'vendor/autoload.php';
-	require_once 'vendor/php-activerecord/php-activerecord/ActiveRecord.php';
+	require '../vendor/autoload.php';
+	require_once '../vendor/php-activerecord/php-activerecord/ActiveRecord.php';
 
 	ActiveRecord\Config::initialize(function($cfg)
  	{
- 		$cfg->set_model_directory('models');
+ 		$cfg->set_model_directory('../models');
  		$cfg->set_connections(array('development' =>
  		"mysql://tracker".(ENVIRONMENT=="prod" ? null : "-" . ENVIRONMENT).":P1zzaP4rty!!!@localhost/tracker".(ENVIRONMENT=="prod" ? null : "-" . ENVIRONMENT)."?charset=utf8"));
  	});
