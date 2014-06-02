@@ -143,6 +143,7 @@
 		
 	});
 
+
 	$app->post('/activity',  $authenticate($app), function () {
 		global $app;
 		global $user;
@@ -198,6 +199,37 @@
 
 		$app->response->setBody(json_encode($response));
 
+	});
+
+	$app->patch('/activity/type/:id',  $authenticate($app), function ($id) {
+		global $app;
+		global $user;
+
+		$request = $app->request;
+		$service = new ActivityService();
+
+		 $params = $request->params();
+		 $params['id'] = $id;
+		 $params['user_id'] = $user['id'];
+
+		$response = $service->updateType($params);
+
+		$app->response->setBody(json_encode($response));
+
+	});
+
+
+	$app->get('/activity/type/:id',  $authenticate($app), function ($id) {
+		global $app;
+		global $user;
+
+		$request = $app->request;
+		$service = new ActivityService();
+
+		$response = $service->findType(array_merge(array("user_id"=>$user['id'], "id"=>$id)));
+
+		$app->response->setBody(json_encode($response));
+		
 	});
 
 	$app->get('/activity/report/by/:timeframe',  $authenticate($app), function ($timeframe) {

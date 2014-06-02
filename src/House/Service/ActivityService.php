@@ -23,6 +23,22 @@ class ActivityService extends BaseService
         return $this->response;
     }
 
+    public function find($criteria = array())
+    {
+
+       $activities = Activity::find_by_sql('
+            SELECT *
+            FROM  `activity` 
+            LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id` 
+            WHERE  `activity`.`user_id` = '.$criteria['user_id'].'
+            AND  `activity`.`id` = '.$criteria['id'].'
+            ORDER BY  `activity`.`date_added` DESC 
+        ');
+
+        $this->response->setData($this->resultsToArray($activities));
+        return $this->response;
+    }
+
     public function findType($criteria = array())
     {
 
@@ -44,6 +60,15 @@ class ActivityService extends BaseService
         } else {
             $this->response->setData($this->resultsToArray($types));
         }
+        return $this->response;
+    }
+
+    public function updateType($criteria = array())
+    {
+        $type = ActivityType::find($criteria['id']);
+        $type->update_attributes($criteria);
+
+        $this->response->setData($type->to_array());
         return $this->response;
     }
 
