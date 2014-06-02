@@ -11,7 +11,7 @@ class ActivityService extends BaseService
     {
 
        $activities = Activity::find_by_sql('
-            SELECT * 
+            SELECT *
             FROM  `activity` 
             LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id` 
             WHERE  `activity`.`user_id` = '.$criteria['user_id'].'
@@ -60,6 +60,20 @@ class ActivityService extends BaseService
         return $this->response;
     }
 
+    public function delete($params)
+    {
+    
+        try {
+            $object = Activity::find($params['id']);
+            $object->delete();
+        }
+        catch (Exception $e) {
+            print_r($e);
+        }
+        $this->response->setData($object->to_array());
+        return $this->response;
+    }
+
     public function createType($params)
     {
     
@@ -92,7 +106,7 @@ class ActivityService extends BaseService
     public function report($criteria)
     {
         $activities = Activity::find_by_sql('
-            SELECT * 
+            SELECT `activity`.*,  `activity_type`.name, `activity_type`.polarity
             FROM  `activity` 
             LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id` 
             WHERE  `activity`.`user_id` = '.$criteria['user_id'].'

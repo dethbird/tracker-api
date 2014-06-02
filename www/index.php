@@ -157,6 +157,19 @@
 		
 	});
 
+	$app->delete('/activity',  $authenticate($app), function () {
+		global $app;
+		global $user;
+
+		$request = $app->request;
+		$service = new ActivityService();
+
+		$response = $service->delete(array_merge(array("user_id"=>$user['id']), $request->params()));
+
+		$app->response->setBody(json_encode($response));
+		
+	});
+
 	$app->get('/activity/type',  $authenticate($app), function () {
 		global $app;
 		global $user;
