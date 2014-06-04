@@ -145,16 +145,23 @@ class ActivityService extends BaseService
 
             $report = new stdClass();
             $report->timeframes = array();
-            $report->ativity_types = array();
+            $report->activity_types = array();
+
+            $report->date_range = array(
+                "start_date" => null,
+                "end_date" => null
+            );
+            $report->polarity = array(
+                "good" => null,
+                "bad" => null
+            );
 
             foreach ($activities as $activity ){
 
-                $report->ativity_types[$activity->activity_type_id] = $activity->to_array();
-
+                // TIMEFRAME STATS
                 $date = date("Y-m-d", strtotime($activity->date_added));
                 if($currentDate != $date){
                     $currentDate = $date;
-                    // echo $currentDate." ";
                     $report->timeframes[$currentDate] = array();
                     $report->timeframes[$currentDate]['polarity'] = array();
                     $report->timeframes[$currentDate]['polarity']['good'] = 0;
@@ -180,6 +187,52 @@ class ActivityService extends BaseService
                     $report->timeframes[$currentDate]['quantity'][$activity->activity_type_id] = 0;
                 }
                 $report->timeframes[$currentDate]['quantity'][$activity->activity_type_id] += $activity->quantity;
+
+                // ACTIVITY TYPE STATS
+                if(!isset($report->activity_types[$activity->activity_type_id])) {
+                    $report->activity_types[$activity->activity_type_id] = array(
+                        "activity_type_id" => $activity->activity_type_id,
+                        "quantity" => 0,
+                        "occurrence" => 0,
+                        "name" => $activity->name,
+                        "polarity" => $activity->polarity,
+                        "start_date" => null,
+                        "end_date" => null
+                    );
+                }
+                $report->activity_types[$activity->activity_type_id]['quantity'] += $activity->quantity;
+                $report->activity_types[$activity->activity_type_id]['occurrence']++;
+
+                if (is_null($report->activity_types[$activity->activity_type_id]['start_date'])) {
+                    $report->activity_types[$activity->activity_type_id]['start_date'] = $activity->date_added;
+                } else if (strtotime($report->activity_types[$activity->activity_type_id]['start_date']) > strtotime($activity->date_added) ) {
+                    $report->activity_types[$activity->activity_type_id]['start_date'] = $activity->date_added;
+                }
+
+                if (is_null($report->activity_types[$activity->activity_type_id]['end_date'])) {
+                    $report->activity_types[$activity->activity_type_id]['end_date'] = $activity->date_added;
+                } else if (strtotime($report->activity_types[$activity->activity_type_id]['end_date']) < strtotime($activity->date_added) ) {
+                    $report->activity_types[$activity->activity_type_id]['end_date'] = $activity->date_added;
+                }
+
+                // OVERALL STATS
+                if (is_null($report->date_range['start_date'])) {
+                    $report->date_range['start_date'] = $activity->date_added;
+                } else if (strtotime($report->date_range['start_date']) > strtotime($activity->date_added) ) {
+                    $report->date_range['start_date'] = $activity->date_added;
+                }
+
+                if (is_null($report->date_range['end_date'])) {
+                    $report->date_range['end_date'] = $activity->date_added;
+                } else if (strtotime($report->date_range['end_date']) < strtotime($activity->date_added) ) {
+                    $report->date_range['end_date'] = $activity->date_added;
+                }
+                if($activity->polarity > 0){
+                    $report->polarity['good']++;
+                } else {
+                    $report->polarity['bad']++;
+                }
+
 
             }
 
