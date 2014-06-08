@@ -29,6 +29,46 @@ class UserService extends BaseService
         return $this->response;
     }
 
+    public function findByAuthToken($token)
+    {
+        $users = User::find('all', array('conditions' => array('auth_token = ?', $token)));
+
+        if(count($users)<1){
+            $this->response->addError("user.not_found");
+        } else {
+            $this->response->setData($users[0]->to_array());
+        }
+        return $this->response;
+        
+    }
+
+
+    public function findByEmail($email)
+    {
+        $users = User::find('all', array('conditions' => array('email = ?', $email)));
+
+        if(count($users)<1){
+            $this->response->addError("user.not_found");
+        } else {
+            $this->response->setData($users[0]->to_array());
+        }
+        return $this->response;
+        
+    }
+
+    public function create($params)
+    {
+    
+        try {
+            $object = User::create($params);
+        }
+        catch (Exception $e) {
+            print_r($e);
+        }
+        $this->response->setData(array_merge($object->to_array(), array("is_new"=>1)));
+        return $this->response;
+    }
+
     // public function auth($email, $password)
     // {
     //     $users = User::find('all', array('conditions' => array('email = ? AND password = MD5(?)', $email, $password)));

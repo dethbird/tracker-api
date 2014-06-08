@@ -84,23 +84,13 @@
 		return function () use ( $app ) 
 		{
 			global $user;
-
 			
 			$request = $app->request;
 
-
-			// var_dump($request->headers("User-Id"));
-
 			$service = new UserService();
-			// $response = $service->findByApiKey($request->params('api_key'));
-			$response = $service->find($request->headers('User-Id'));
+			$response = $service->findByAuthToken($request->headers('Auth-Token'));
 
-			//var_dump($response);
-
-			if(!$response->isOk()){
-				
-				// @todo if request is not GET, and user does not have write access, then send 403 as well
-
+			if($response->status!==true){
 				$app->response->setStatus(403);
 				$app->stop();
 			} else {
@@ -109,29 +99,36 @@
 		};
 	};
 
-	$app->get('/hello/:name',  $authenticate($app), function ($name) {
-		global $user;
-    	// var_dump($user);
+
+	$app->post('/user', $authenticate($app), function () use ($app) {
+		
+		$request = $app->request;
+
+		//find user by email
+		$service = new UserService();
+		$response = $service->findByEmail($request->params('email'));
+		
+		// if not found create one
+		if(!$response->isOk()){
+			$response = $service->create($request->params());
+		}
+
+		//return user
+		$app->response->setBody(json_encode($response));
+
+
 	});
 
-	// $app->post('/auth/', $authenticate($app), function () {
-	// 	global $app;
-		
-	// 	$request = $app->request;
+	$app->get('/user/token-auth',  function () use ($app) {
+		$request = $app->request;
 
-	// 	$service = new UserService();
-		
-	// 	$response = $service->auth($request->params('email'), $request->params('password'));
-	// 	$app->response->setBody(json_encode($response));
+		$service = new UserService();
+		$response = $service->findByAuthToken($request->headers('Auth-Token'));
+		$app->response->setBody(json_encode($response));
 
-	// 	if(!$response->isOk()){
-	// 		$app->response->setStatus(404);
-	// 		$app->stop();
-	// 	} 
-	// });
+	});
 
-	$app->get('/activity/log',  $authenticate($app), function () {
-		global $app;
+	$app->get('/activity/log',  $authenticate($app), function () use ($app) {
 		global $user;
 
 		$request = $app->request;
@@ -144,8 +141,7 @@
 	});
 
 
-	$app->post('/activity',  $authenticate($app), function () {
-		global $app;
+	$app->post('/activity',  $authenticate($app), function () use ($app) {
 		global $user;
 
 		$request = $app->request;
@@ -158,8 +154,7 @@
 		
 	});
 
-	$app->delete('/activity',  $authenticate($app), function () {
-		global $app;
+	$app->delete('/activity',  $authenticate($app), function () use ($app) {
 		global $user;
 
 		$request = $app->request;
@@ -171,9 +166,9 @@
 		
 	});
 
-	$app->get('/activity/type',  $authenticate($app), function () {
-		global $app;
+	$app->get('/activity/type', $authenticate($app), function () use ($app) {
 		global $user;
+
 		
 		$request = $app->request;
 		$service = new ActivityService();
@@ -188,8 +183,7 @@
 
 	});
 
-	$app->post('/activity/type',  $authenticate($app), function () {
-		global $app;
+	$app->post('/activity/type',  $authenticate($app), function () use ($app) {
 		global $user;
 
 		$request = $app->request;
@@ -201,8 +195,7 @@
 
 	});
 
-	$app->patch('/activity/type/:id',  $authenticate($app), function ($id) {
-		global $app;
+	$app->patch('/activity/type/:id',  $authenticate($app), function ($id) use ($app) {
 		global $user;
 
 		$request = $app->request;
@@ -219,8 +212,7 @@
 	});
 
 
-	$app->get('/activity/type/:id',  $authenticate($app), function ($id) {
-		global $app;
+	$app->get('/activity/type/:id',  $authenticate($app), function ($id) use ($app) {
 		global $user;
 
 		$request = $app->request;
@@ -232,9 +224,7 @@
 		
 	});
 
-	$app->get('/activity/report/by/:timeframe',  $authenticate($app), function ($timeframe) {
-
-		global $app;
+	$app->get('/activity/report/by/:timeframe',  $authenticate($app), function ($timeframe) use ($app) {
 		global $user;
 
 		$request = $app->request;
