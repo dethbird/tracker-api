@@ -48,18 +48,18 @@ class ActivityService extends BaseService
             $conditionString .= " AND id = ?";
             $conditionBindings[] = $criteria['id'];
         }
+        if(isset($criteria['user_id'])){
+            $conditionString .= " AND user_id = ?";
+            $conditionBindings[] = $criteria['user_id'];
+        }
+
 
         $types = ActivityType::find('all', array(
             'order' => 'name asc',
             'conditions' => array_merge(array($conditionString), $conditionBindings)
         ));
 
-
-        if(count($types)<1){
-            $this->response->addError("acitivity_type.find.no_results");
-        } else {
-            $this->response->setData($this->resultsToArray($types));
-        }
+        $this->response->setData($this->resultsToArray($types));
         return $this->response;
     }
 

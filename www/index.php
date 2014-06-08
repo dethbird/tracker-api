@@ -15,7 +15,7 @@
 
 	//read env file
 	// # just points to environment config yml
-	global $configs;
+	global $configs, $user;
 	$env = parse_ini_file("../env.ini");
 	$configs = parse_ini_file($env['config_file']);
 
@@ -169,10 +169,9 @@
 	$app->get('/activity/type', $authenticate($app), function () use ($app) {
 		global $user;
 
-		
 		$request = $app->request;
 		$service = new ActivityService();
-		
+
 		$response = $service->findType(array("user_id"=>$user['id']));
 
 		$app->response->setBody(json_encode($response));
