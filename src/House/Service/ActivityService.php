@@ -171,9 +171,11 @@ class ActivityService extends BaseService
                 }
 
                 $report->timeframes[$currentDate]['logs'][] = array(
+                    "id" => $activity->id,
                     "activity_type_id" => $activity->activity_type_id,
                     "quantity" => $activity->quantity,
                     "name" => $activity->name,
+                    "note" => $activity->note,
                     "polarity" => $activity->polarity,
                     "date_added" => $activity->date_added
                 );
