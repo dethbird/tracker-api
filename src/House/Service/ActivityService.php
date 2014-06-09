@@ -170,7 +170,13 @@ class ActivityService extends BaseService
                     $report->timeframes[$currentDate]['quantity'] = array();
                 }
 
-                $report->timeframes[$currentDate]['logs'][] = $activity->to_array();
+                $report->timeframes[$currentDate]['logs'][] = array(
+                    "activity_type_id" => $activity->activity_type_id,
+                    "quantity" => $activity->quantity,
+                    "name" => $activity->name,
+                    "polarity" => $activity->polarity,
+                    "date_added" => $activity->date_added
+                );
 
                 if($activity->polarity > 0){
                     $report->timeframes[$currentDate]['polarity']['good']++;
