@@ -63,8 +63,10 @@
  	* |____|_  /\___  >__   |____/|__||__|    \___  >____  >
 	*         \/     \/   |__|                     \/     \/ 	
 	*/
-	require_once('House/Service/UserService.php');
+	
 	require_once('House/Service/ActivityService.php');
+	require_once('House/Service/GoalService.php');
+	require_once('House/Service/UserService.php');
 
 
 	/**
@@ -182,6 +184,20 @@
 
 	});
 
+
+	$app->get('/activity/type/:id',  $authenticate($app), function ($id) use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new ActivityService();
+
+		$response = $service->findType(array_merge(array("user_id"=>$user['id'], "id"=>$id)));
+
+		$app->response->setBody(json_encode($response));
+		
+	});
+
+
 	$app->post('/activity/type',  $authenticate($app), function () use ($app) {
 		global $user;
 
@@ -209,18 +225,68 @@
 		$app->response->setBody(json_encode($response));
 
 	});
+	/**
+	* GOALS
+	*/	
 
-
-	$app->get('/activity/type/:id',  $authenticate($app), function ($id) use ($app) {
+	$app->get('/goals', $authenticate($app), function () use ($app) {
 		global $user;
 
 		$request = $app->request;
-		$service = new ActivityService();
+		$service = new GoalService();
 
-		$response = $service->findType(array_merge(array("user_id"=>$user['id'], "id"=>$id)));
+		$response = $service->find(array("user_id"=>$user['id']));
 
 		$app->response->setBody(json_encode($response));
+
+		if(!$response->isOk()){
+			$app->halt(404, json_encode($response));
+		} 
+
+	});	
+
+	$app->get('/goals/:id', $authenticate($app), function ($id) use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new GoalService();
+
+		$response = $service->find(array("user_id"=>$user['id'], "id"=>$id));
+
+		$app->response->setBody(json_encode($response));
+
+		if(!$response->isOk()){
+			$app->halt(404, json_encode($response));
+		} 
+
+	});
+
+	$app->post('/goals',  $authenticate($app), function () use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new GoalService();
+
+		$response = $service->create(array_merge(array("user_id"=>$user['id']), $request->params()));
+		$app->response->setBody(json_encode($response));
 		
+	});
+
+
+	$app->patch('/goals/:id',  $authenticate($app), function ($id) use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new GoalService();
+
+		 $params = $request->params();
+		 $params['id'] = $id;
+		 $params['user_id'] = $user['id'];
+
+		$response = $service->update($params);
+
+		$app->response->setBody(json_encode($response));
+
 	});
 
 	$app->get('/activity/report/by/:timeframe',  $authenticate($app), function ($timeframe) use ($app) {
