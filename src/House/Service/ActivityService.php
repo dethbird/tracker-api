@@ -2,6 +2,7 @@
 require_once("models/Activity.php");
 require_once("models/ActivityType.php");
 require_once("House/Service/BaseService.php");
+require_once("House/Service/GoalService.php");
 
 class ActivityService extends BaseService
 {
@@ -138,6 +139,17 @@ class ActivityService extends BaseService
             ORDER BY  `activity`.`date_added` DESC
         ');
 
+        $goals = GoalService::find($criteria);
+        $goalsByActivity = array();
+        foreach($goals->data as $goal) {
+            $goalsByActivity[$goal['activity_type_id']] = $goal;
+            // print_r($goal);
+        }
+        // die();
+
+        // var_dump($goalsByActivity); die();
+        // var_dump($goals->data); die();
+
 
         if($criteria['timeframe']=="day"){
             
@@ -168,6 +180,7 @@ class ActivityService extends BaseService
                     $report->timeframes[$currentDate]['polarity']['bad'] = 0;
                     $report->timeframes[$currentDate]['occurrence'] = array();
                     $report->timeframes[$currentDate]['quantity'] = array();
+                    $report->timeframes[$currentDate]['goals'] = array();
                 }
 
                 $report->timeframes[$currentDate]['logs'][] = array(
@@ -195,6 +208,25 @@ class ActivityService extends BaseService
                     $report->timeframes[$currentDate]['quantity'][$activity->activity_type_id] = 0;
                 }
                 $report->timeframes[$currentDate]['quantity'][$activity->activity_type_id] += $activity->quantity;
+
+                //goals for the day
+                if(isset($goalsByActivity[$activity->activity_type_id])){
+                    $goal = $goalsByActivity[$activity->activity_type_id];
+                    // var_dump($goal['timeframe']=="day");
+                    if ($goal['timeframe']=="day") {
+                        if(!isset($report->timeframes[$currentDate]['goals'][$goal['id']])){
+                            $report->timeframes[$currentDate]['goals'][$goal['id']] = array(
+                                "occurrence_count" => 0,
+                                "activity_type_id" => $activity->activity_type_id,
+                                "operator" => $goal['operator'],
+                                "occurrence" => $goal['occurrence'],
+                                "timeframe" => $goal['timeframe']
+                            );
+                        }
+
+                        $report->timeframes[$currentDate]['goals'][$goal['id']]['occurrence_count']++;
+                    }
+                }
 
                 // ACTIVITY TYPE STATS
                 if(!isset($report->activity_types[$activity->activity_type_id])) {
