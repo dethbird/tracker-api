@@ -7,34 +7,31 @@ require_once("House/Service/GoalService.php");
 class ActivityService extends BaseService
 {
 
-
-    public function getLog($criteria = array())
-    {
-
-       $activities = Activity::find_by_sql('
-            SELECT *
-            FROM  `activity` 
-            LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id` 
-            WHERE  `activity`.`user_id` = '.$criteria['user_id'].'
-            ORDER BY  `activity`.`date_added` DESC 
-        ');
-
-        
-        $this->response->setData($this->resultsToArray($activities));
-        return $this->response;
-    }
-
     public function find($criteria = array())
     {
 
-       $activities = Activity::find_by_sql('
-            SELECT *
+        $sql = '
+            SELECT 
+            `activity`.id,
+            `activity`.activity_type_id,
+            `activity`.quantity,
+            `activity`.note,
+            `activity`.date_added,
+            `activity_type`.name,
+            `activity_type`.polarity,
+            IF(`goal`.`id` IS NULL,NULL,"Y") as has_goal
             FROM  `activity` 
-            LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id` 
+            LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id`
+            LEFT JOIN `goal` ON `goal`.`activity_type_id` = `activity_type`.`id`
             WHERE  `activity`.`user_id` = '.$criteria['user_id'].'
-            AND  `activity`.`id` = '.$criteria['id'].'
+            '. ( isset($criteria['id']) ? ' AND  `activity`.`id` = '.$criteria['id'] : null) .'
+            '. ( isset($criteria['start_date']) ? ' AND  `activity`.`date_added` >= "'.date("Y-m-d g:i:s", $criteria['start_date']).'"' : null) .' 
+             
+            GROUP BY `activity`.`id`
             ORDER BY  `activity`.`date_added` DESC 
-        ');
+        ';
+
+        $activities = Activity::find_by_sql($sql);
 
         $this->response->setData($this->resultsToArray($activities));
         return $this->response;
@@ -132,7 +129,10 @@ class ActivityService extends BaseService
     public function report($criteria)
     {
         $activities = Activity::find_by_sql('
-            SELECT `activity`.*,  `activity_type`.name, `activity_type`.polarity
+            SELECT 
+            `activity`.*,  
+            `activity_type`.name, 
+            `activity_type`.polarity
             FROM  `activity` 
             LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id` 
             WHERE  `activity`.`user_id` = '.$criteria['user_id'].'

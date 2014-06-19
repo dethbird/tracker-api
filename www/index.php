@@ -11,7 +11,7 @@
 	ini_set('error_reporting', E_ALL);
 	ini_set('display_errors', 1);
 	define("APPLICATION_PATH", __DIR__ . "/..");
-	date_default_timezone_set('America/Los_Angeles');
+	date_default_timezone_set('America/New_York');
 
 	//read env file
 	// # just points to environment config yml
@@ -130,13 +130,13 @@
 
 	});
 
-	$app->get('/activity/log',  $authenticate($app), function () use ($app) {
+	$app->get('/activity/',  $authenticate($app), function () use ($app) {
 		global $user;
 
 		$request = $app->request;
 		$service = new ActivityService();
 
-		$response = $service->getLog(array_merge(array("user_id"=>$user['id']), $request->params()));
+		$response = $service->find(array_merge(array("user_id"=>$user['id']), $request->params()));
 
 		$app->response->setBody(json_encode($response));
 		
@@ -244,6 +244,7 @@
 		} 
 
 	});	
+
 
 	$app->get('/goals/:id', $authenticate($app), function ($id) use ($app) {
 		global $user;
