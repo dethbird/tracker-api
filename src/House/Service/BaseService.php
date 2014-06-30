@@ -20,7 +20,11 @@ class BaseService
     public function resultsToArray($items){
     	$response = array();
     	foreach($items as $item){
-    		$response[] = $item->to_array();
+            $obj = $item->to_array();
+            if(isset($item->date_added)){
+                $obj['date_added'] = $item->date_added;
+            }
+    		$response[] = $obj;
     	}
     	return $response;
     }

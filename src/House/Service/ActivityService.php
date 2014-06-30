@@ -110,21 +110,14 @@ class ActivityService extends BaseService
         return $this->response;
     }
 
-    // public function update($params)
-    // {
-    //     unset($params['api_key']);
-    //     unset($params['$$hashKey']);
-    //     if($params['extension']==""){
-    //         $params['extension'] = null;
-    //     }
-        
-    //     $program = Program::find($params['id']);
-    //     if(!$program->uuid){
-    //         $params['uuid'] = $this->gen_uuid();
-    //     }
-    //     $program->update_attributes($params);
-    //     return $program;
-    // }
+    public function update($criteria)
+    {
+        $activity = Activity::find($criteria['id']);
+        $activity->update_attributes($criteria);
+
+        $this->response->setData($activity->to_array());
+        return $this->response;
+    }
 
     public function report($criteria)
     {

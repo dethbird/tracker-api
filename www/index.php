@@ -142,32 +142,6 @@
 		
 	});
 
-
-	$app->post('/activity',  $authenticate($app), function () use ($app) {
-		global $user;
-
-		$request = $app->request;
-		$service = new ActivityService();
-
-
-		$response = $service->create(array_merge(array("user_id"=>$user['id']), $request->params()));
-
-		$app->response->setBody(json_encode($response));
-		
-	});
-
-	$app->delete('/activity',  $authenticate($app), function () use ($app) {
-		global $user;
-
-		$request = $app->request;
-		$service = new ActivityService();
-
-		$response = $service->delete(array_merge(array("user_id"=>$user['id']), $request->params()));
-
-		$app->response->setBody(json_encode($response));
-		
-	});
-
 	$app->get('/activity/type', $authenticate($app), function () use ($app) {
 		global $user;
 
@@ -182,6 +156,46 @@
 			$app->halt(404, json_encode($response));
 		} 
 
+	});
+
+	$app->get('/activity/:id',  $authenticate($app), function ($id) use ($app) {
+
+		global $user;
+
+		$request = $app->request;
+		$service = new ActivityService();
+
+		$response = $service->find(array("user_id"=>$user['id'], "id" => $id));
+
+		$app->response->setBody(json_encode($response));
+		
+	});
+
+
+	$app->post('/activity',  $authenticate($app), function () use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new ActivityService();
+
+
+		$response = $service->create(array_merge(array("user_id"=>$user['id']), $request->params()));
+
+		$app->response->setBody(json_encode($response));
+		
+	});
+
+
+	$app->delete('/activity',  $authenticate($app), function () use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new ActivityService();
+
+		$response = $service->delete(array_merge(array("user_id"=>$user['id']), $request->params()));
+
+		$app->response->setBody(json_encode($response));
+		
 	});
 
 
@@ -216,15 +230,34 @@
 		$request = $app->request;
 		$service = new ActivityService();
 
-		 $params = $request->params();
-		 $params['id'] = $id;
-		 $params['user_id'] = $user['id'];
+		$params = $request->params();
+		$params['id'] = $id;
+		$params['user_id'] = $user['id'];
 
 		$response = $service->updateType($params);
 
 		$app->response->setBody(json_encode($response));
 
 	});
+
+	// edit activity
+	$app->patch('/activity/:id',  $authenticate($app), function ($id) use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new ActivityService();
+
+		$params = $request->params();
+		$params['id'] = $id;
+		$params['user_id'] = $user['id'];
+
+		$response = $service->update($params);
+
+		$app->response->setBody(json_encode($response));
+		
+	});
+
+
 	/**
 	* GOALS
 	*/	
