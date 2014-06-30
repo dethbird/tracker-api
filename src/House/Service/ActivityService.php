@@ -129,27 +129,23 @@ class ActivityService extends BaseService
             FROM  `activity` 
             LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id` 
             WHERE  `activity`.`user_id` = '.$criteria['user_id'].'
-            ORDER BY  `activity`.`date_added` DESC
+            ORDER BY  `activity`.`date_added` ASC
         ');
 
         $goals = GoalService::find($criteria);
         $goalsByActivity = array();
         foreach($goals->data as $goal) {
             $goalsByActivity[$goal['activity_type_id']] = $goal;
-            // print_r($goal);
         }
-        // die();
 
-        // var_dump($goalsByActivity); die();
-        // var_dump($goals->data); die();
-
-
+        // REPORT BY DAY
         if($criteria['timeframe']=="day"){
             
             $currentDate = null;
 
             $report = new stdClass();
-            $report->timeframes = array();
+            $report->days = array();
+            $report->weeks = array();
             $report->activity_types = array();
 
             $report->date_range = array(
@@ -167,16 +163,29 @@ class ActivityService extends BaseService
                 $date = date("Y-m-d", strtotime($activity->date_added));
                 if($currentDate != $date){
                     $currentDate = $date;
-                    $report->timeframes[$currentDate] = array();
-                    $report->timeframes[$currentDate]['polarity'] = array();
-                    $report->timeframes[$currentDate]['polarity']['good'] = 0;
-                    $report->timeframes[$currentDate]['polarity']['bad'] = 0;
-                    $report->timeframes[$currentDate]['occurrence'] = array();
-                    $report->timeframes[$currentDate]['quantity'] = array();
-                    $report->timeframes[$currentDate]['goals'] = array();
+                    $report->days[$currentDate] = array();
+                    $report->days[$currentDate]['polarity'] = array();
+                    $report->days[$currentDate]['polarity']['good'] = 0;
+                    $report->days[$currentDate]['polarity']['bad'] = 0;
+                    $report->days[$currentDate]['occurrence'] = array();
+                    $report->days[$currentDate]['quantity'] = array();
+                    $report->days[$currentDate]['goals'] = array(
+                        "day" => array(),
+                        "week" => array()
+                    );
+
+                    //build week based array
+                    //find the monday before this date
+                    $currentWeek = date("Y-m-d", strtotime('last monday', strtotime($date)));
+                    if(!isset($report->weeks[$currentWeek])){
+                        $report->weeks[$currentWeek] = array(
+                            "goals"=>array()
+                        );
+                    }
+
                 }
 
-                $report->timeframes[$currentDate]['logs'][] = array(
+                $report->days[$currentDate]['logs'][] = array(
                     "id" => $activity->id,
                     "activity_type_id" => $activity->activity_type_id,
                     "quantity" => $activity->quantity,
@@ -187,28 +196,43 @@ class ActivityService extends BaseService
                 );
 
                 if($activity->polarity > 0){
-                    $report->timeframes[$currentDate]['polarity']['good']++;
+                    $report->days[$currentDate]['polarity']['good']++;
                 } else {
-                    $report->timeframes[$currentDate]['polarity']['bad']++;
+                    $report->days[$currentDate]['polarity']['bad']++;
                 }
 
-                if(!isset($report->timeframes[$currentDate]['occurrence'][$activity->activity_type_id])){
-                    $report->timeframes[$currentDate]['occurrence'][$activity->activity_type_id] = 0;
+                if(!isset($report->days[$currentDate]['occurrence'][$activity->activity_type_id])){
+                    $report->days[$currentDate]['occurrence'][$activity->activity_type_id] = 0;
                 }
-                $report->timeframes[$currentDate]['occurrence'][$activity->activity_type_id]++;
+                $report->days[$currentDate]['occurrence'][$activity->activity_type_id]++;
 
-                if(!isset($report->timeframes[$currentDate]['quantity'][$activity->activity_type_id])){
-                    $report->timeframes[$currentDate]['quantity'][$activity->activity_type_id] = 0;
+                if(!isset($report->days[$currentDate]['quantity'][$activity->activity_type_id])){
+                    $report->days[$currentDate]['quantity'][$activity->activity_type_id] = 0;
                 }
-                $report->timeframes[$currentDate]['quantity'][$activity->activity_type_id] += $activity->quantity;
+                $report->days[$currentDate]['quantity'][$activity->activity_type_id] += $activity->quantity;
 
                 //goals for the day
                 if(isset($goalsByActivity[$activity->activity_type_id])){
                     $goal = $goalsByActivity[$activity->activity_type_id];
-                    // var_dump($goal['timeframe']=="day");
-                    if ($goal['timeframe']=="day") {
-                        if(!isset($report->timeframes[$currentDate]['goals'][$goal['id']])){
-                            $report->timeframes[$currentDate]['goals'][$goal['id']] = array(
+
+                    //if weekly, then grab this week's existing entries for this weekly goal
+                    if ($goal['timeframe']=="week") {
+                        if(!isset($report->weeks[$currentWeek]['goals'][$goal['id']])){
+                            $report->weeks[$currentWeek]['goals'][$goal['id']] = array(
+                                "occurrence_count" => 0,
+                                "activity_type_id" => $goal['activity_type_id'],
+                                "operator" => $goal['operator'],
+                                "occurrence" => $goal['occurrence'],
+                                "timeframe" => $goal['timeframe']
+                            );
+                        }
+                        $report->weeks[$currentWeek]['goals'][$goal['id']]['occurrence_count']++;
+
+                        $report->days[$currentDate]['goals'][$goal['timeframe']][$goal['id']] = $report->weeks[$currentWeek]['goals'][$goal['id']];
+
+                    } else if ($goal['timeframe']=="day") {
+                        if(!isset($report->days[$currentDate]['goals'][$goal['timeframe']][$goal['id']])){
+                            $report->days[$currentDate]['goals'][$goal['timeframe']][$goal['id']] = array(
                                 "occurrence_count" => 0,
                                 "activity_type_id" => $activity->activity_type_id,
                                 "operator" => $goal['operator'],
@@ -217,8 +241,12 @@ class ActivityService extends BaseService
                             );
                         }
 
-                        $report->timeframes[$currentDate]['goals'][$goal['id']]['occurrence_count']++;
+                        $report->days[$currentDate]['goals'][$goal['timeframe']][$goal['id']]['occurrence_count']++;
                     }
+
+
+                    
+                    // }
                 }
 
                 // ACTIVITY TYPE STATS
@@ -268,6 +296,8 @@ class ActivityService extends BaseService
 
 
             }
+
+            $report->days = array_reverse($report->days);
 
             $this->response->setData($report);
             return $this->response;
