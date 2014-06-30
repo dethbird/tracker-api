@@ -298,7 +298,11 @@ class ActivityService extends BaseService
             }
 
             $report->days = array_reverse($report->days);
+            foreach ($report->days as $date=>$day) {
 
+                $report->days[$date]['logs'] = array_reverse($day['logs']);
+            }
+            // die();
             $this->response->setData($report);
             return $this->response;
         }
