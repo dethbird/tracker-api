@@ -125,9 +125,11 @@ class ActivityService extends BaseService
             SELECT 
             `activity`.*,  
             `activity_type`.name, 
-            `activity_type`.polarity
+            `activity_type`.polarity,
+            IF(`goal`.`id` IS NULL,NULL,"Y") as has_goal
             FROM  `activity` 
-            LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id` 
+            LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id`
+            LEFT JOIN `goal` ON `goal`.`activity_type_id` = `activity_type`.`id`
             WHERE  `activity`.`user_id` = '.$criteria['user_id'].'
             ORDER BY  `activity`.`date_added` ASC
         ');
@@ -192,6 +194,7 @@ class ActivityService extends BaseService
                     "name" => $activity->name,
                     "note" => $activity->note,
                     "polarity" => $activity->polarity,
+                    "has_goal" => $activity->has_goal,
                     "date_added" => $activity->date_added
                 );
 
@@ -244,10 +247,8 @@ class ActivityService extends BaseService
                         $report->days[$currentDate]['goals'][$goal['timeframe']][$goal['id']]['occurrence_count']++;
                     }
 
-
-                    
-                    // }
                 }
+
 
                 // ACTIVITY TYPE STATS
                 if(!isset($report->activity_types[$activity->activity_type_id])) {
