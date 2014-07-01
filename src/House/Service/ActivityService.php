@@ -175,8 +175,8 @@ class ActivityService extends BaseService
                     );
 
                     //build week based array
-                    //find the monday before this date
-                    $currentWeek = date("Y-m-d", strtotime('last monday', strtotime($date)));
+                    //find the monday before this date if today is not monday
+                    $currentWeek = date('N', strtotime($date)) == 1 ? $date : date("Y-m-d", strtotime('previous monday', strtotime($date)));
                     if(!isset($report->weeks[$currentWeek])){
                         $report->weeks[$currentWeek] = array(
                             "goals"=>array()
