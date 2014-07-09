@@ -67,6 +67,7 @@
 	require_once('House/Service/ActivityService.php');
 	require_once('House/Service/GoalService.php');
 	require_once('House/Service/UserService.php');
+	require_once('House/Service/Response/ServiceResponse.php');
 
 
 	/**
@@ -129,6 +130,72 @@
 		$app->response->setBody(json_encode($response));
 
 	});
+
+	$app->get('/user/social', $authenticate($app), function () use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$response = new ServiceResponse();
+		$responseBody = new stdClass();
+
+		$service = new UserService();
+		$instagramResponse = $service->findInstagram(array("user_id"=>$user['id']));
+		$responseBody->instagram = $instagramResponse->data;
+
+
+		$response->setData($responseBody);
+
+		$app->response->setBody(json_encode($response));
+
+	});
+
+	$app->delete('/user/social/delete', $authenticate($app), function () use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new UserService();
+
+		// print_r($request->params()); die();
+
+		$response = $service->deleteInstagram(array_merge(array("user_id"=>$user['id']), $request->params()));
+
+		$app->response->setBody(json_encode($response));
+
+	});
+
+	$app->post('/user/instagram', $authenticate($app),  function () use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new UserService();
+
+		// find instagram
+		$instagramResponse = $service->findInstagram(array("instagram_user_id" => $request->params("instagram_user_id")));
+
+		if(count($instagramResponse->data)<1){
+			//create
+			$response = $service->createInstagram(array_merge(array("user_id"=>$user['id']), $request->params()));
+			$app->response->setBody(json_encode($response));
+		} else {
+			//belongs to this user?
+			if($user['id'] != $instagramResponse->data[0]['user_id']){
+				$app->response->setStatus(403);
+				$app->stop();
+			}
+
+			$params = $request->params();
+			$params['user_id'] = $user['id'];
+			$params['id'] = $instagramResponse->data[0]['id'];
+
+			$response = $service->updateInstagram($params);
+			$app->response->setBody(json_encode($response));
+		}
+
+	});
+
+
+
+
 
 	$app->get('/activity/',  $authenticate($app), function () use ($app) {
 		global $user;
