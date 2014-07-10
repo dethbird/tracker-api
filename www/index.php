@@ -15,7 +15,11 @@
 
 	//read env file
 	// # just points to environment config yml
-	global $configs, $user;
+	global $app,
+		$configs,
+		$user,
+		$instagramClient;
+
 	$env = parse_ini_file("../env.ini");
 	$configs = parse_ini_file($env['config_file']);
 
@@ -37,6 +41,7 @@
 
 	require '../vendor/autoload.php';
 	require_once '../vendor/php-activerecord/php-activerecord/ActiveRecord.php';
+	require_once '../src/logger.php';
 
 	ActiveRecord\Config::initialize(function($cfg)
  	{
@@ -46,12 +51,19 @@
  		"mysql://". $configs['mysql_user'] .":" .$configs['mysql_password']. "@" .$configs['mysql_host']. "/" .$configs['mysql_database']. "?charset=utf8"));
  	});
 
- 	global $app, $user;
 	$app = new \Slim\Slim();
 	$app->response->headers->set('Content-Type', 'application/json'); //default response type
 	$app->response->headers->set("Access-Control-Allow-Origin", "*"); // CORS
 	$app->response->headers->set("Access-Control-Allow-Methods", "*");
 	$app->response->headers->set("Access-Control-Allow-Headers", "*");
+
+
+	require_once("../vendor/cosenary/instagram/instagram.class.php");
+	$instagramClient = new Instagram(array(
+      'apiKey'      => $configs['instagram.key'],
+      'apiSecret'   => $configs['instagram.secret'],
+      'apiCallback' => "http://". $_SERVER['HTTP_HOST'] . '/callback/oauth/instagram'
+    ));
 
 
 
@@ -192,6 +204,72 @@
 		}
 
 	});
+
+	// /social/activity/instagram
+	$app->post('/social/activity/instagram', function () use ($app, $instagramClient) {
+
+		$request = $app->request;
+		$params = $request->params();
+		
+		//fetch the instagram account
+		$service = new UserService();
+		$instagramResponse = $service->findInstagram(array("instagram_user_id"=>$params["social_user_id"]));
+		$instagram = $instagramResponse->getData();
+
+		if(count($instagram) > 0) {
+
+			$instagram = $instagram[0];
+			$instagramClient->setAccessToken($instagram['access_token']);
+
+			//get media
+			$media = $instagramClient->getMedia($params['media_id']);
+			$media = $media->data;
+
+
+			Logger::log(json_encode($media));
+
+			//fetch user
+			$userService = new UserService();
+			$userResponse = $userService->find($instagram['user_id']);
+			$user = $userResponse->getData();
+			// Logger::log($user);
+
+			//fetch instagram system activity
+			// $note = "<a href='".$media->link."' target='_blank'>".$media->link."</a> by ".$media->user->username;
+			// foreach ($media->tags as $tag) {
+
+			// }
+
+			// Logger::log($note);
+			$criteria = array(
+				"activity_type_id" => 31,
+				"quantity" => 1,
+				// "note" => $note,
+				"type" => "instagram",
+				"social_user_id" => $params["social_user_id"],
+				"json" => json_encode($media),
+				"date_added" => date("Y-m-d g:i:s a"),
+				"user_id" => $instagram['user_id']
+			);
+			// Logger::log($criteria);
+
+			$activityService = new ActivityService();
+			$response = $activityService->create($criteria);
+
+			$app->response->setBody(json_encode($response));
+
+
+			// Logger::log(json_encode($response));
+			// Logger::log(json_encode($media));
+			// Logger::log($media);
+			// Logger::log($user);
+		}
+		
+
+
+
+	});
+
 
 
 
@@ -407,6 +485,7 @@
 		$app->response->setBody(json_encode($response));
 		
 	});
+
 
 
 	/**

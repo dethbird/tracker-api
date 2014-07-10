@@ -27,6 +27,9 @@ class BaseService
             if(isset($item->date_updated)){
                 $obj['date_updated'] = $item->date_updated;
             }
+            if(isset($item->json)){
+                $obj['json_decoded'] = json_decode($item->date_updated);
+            }
     		$response[] = $obj;
     	}
     	return $response;

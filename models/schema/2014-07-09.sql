@@ -26,3 +26,11 @@ CREATE TABLE IF NOT EXISTS `user_instagram` (
 ALTER TABLE `user_instagram`
   ADD CONSTRAINT `user_instagram_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
 
+
+# social fields
+ALTER TABLE  `activity` ADD  `type` ENUM(  'normal',  'instagram' ) NOT NULL DEFAULT  'normal' AFTER  `note` ,
+ADD  `social_user_id` VARCHAR( 255 ) NOT NULL AFTER  `type` ,
+ADD  `json` TEXT NOT NULL AFTER  `social_user_id` ,
+ADD INDEX (  `social_user_id` );
+
+#social activity types for system user

@@ -194,6 +194,9 @@ class ActivityService extends BaseService
                     "name" => $activity->name,
                     "note" => $activity->note,
                     "polarity" => $activity->polarity,
+                    "type" => $activity->type,
+                    "social_user_id" => $activity->social_user_id,
+                    "json_decoded" => json_decode($activity->json),
                     "has_goal" => $activity->has_goal,
                     "date_added" => $activity->date_added
                 );
