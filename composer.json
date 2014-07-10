@@ -1,6 +1,7 @@
 {
     "require": {
         "slim/slim": "2.*",
-		"php-activerecord/php-activerecord": "1.1.x"
+        "php-activerecord/php-activerecord": "1.1.x",
+        "cosenary/instagram": "dev-master"
     }
 }
