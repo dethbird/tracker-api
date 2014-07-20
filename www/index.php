@@ -151,8 +151,12 @@
 		$responseBody = new stdClass();
 
 		$service = new UserService();
+		
 		$instagramResponse = $service->findInstagram(array("user_id"=>$user['id']));
 		$responseBody->instagram = $instagramResponse->data;
+		
+		$flickrResponse = $service->findFlickr(array("user_id"=>$user['id']));
+		$responseBody->flickr = $flickrResponse->data;
 
 
 		$response->setData($responseBody);
@@ -168,8 +172,11 @@
 		$service = new UserService();
 
 		// print_r($request->params()); die();
-
-		$response = $service->deleteInstagram(array_merge(array("user_id"=>$user['id']), $request->params()));
+		if ($request->params('type')=="instagram") {
+			$response = $service->deleteInstagram(array_merge(array("user_id"=>$user['id']), $request->params()));
+		} elseif ($request->params('type')=="flickr") {
+			$response = $service->deleteFlickr(array_merge(array("user_id"=>$user['id']), $request->params()));
+		}
 
 		$app->response->setBody(json_encode($response));
 
@@ -204,6 +211,37 @@
 		}
 
 	});
+
+
+	$app->post('/user/flickr', $authenticate($app),  function () use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new UserService();
+
+		// find flickr
+		$flickrResponse = $service->findFlickr(array("nsid" => $request->params("nsid")));
+
+		if(count($flickrResponse->data)<1){
+			//create
+			$response = $service->createFlickr(array_merge(array("user_id"=>$user['id']), $request->params()));
+			$app->response->setBody(json_encode($response));
+		} else {
+			//belongs to this user?
+			if($user['id'] != $flickrResponse->data[0]['user_id']){
+				$app->response->setStatus(403);
+				$app->stop();
+			}
+
+			$params = $request->params();
+			$params['user_id'] = $user['id'];
+			$params['id'] = $flickrResponse->data[0]['id'];
+
+			$response = $service->updateFlickr($params);
+			$app->response->setBody(json_encode($response));
+		}
+
+	});	
 
 	// /social/activity/instagram
 	$app->post('/social/activity/instagram', function () use ($app, $instagramClient) {

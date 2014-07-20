@@ -70,6 +70,10 @@ class UserService extends BaseService
         return $this->response;
     }
 
+    /**
+    * INSTAGRAM
+    */
+
     public function findInstagram($criteria)
     {
         $sql = '
@@ -121,6 +125,67 @@ class UserService extends BaseService
     public function updateInstagram($criteria)
     {
         $type = UserInstagram::find($criteria['id']);
+        $type->update_attributes($criteria);
+
+        $this->response->setData($type->to_array());
+        return $this->response;
+    }
+
+    /**
+    * FLICKR
+    */
+
+    public function findFlickr($criteria)
+    {
+        $sql = '
+        SELECT
+            *
+            FROM  `user_flickr` 
+            
+            WHERE  1
+            '. ( isset($criteria['user_id']) ? ' AND  `user_flickr`.`user_id` = '.$criteria['user_id'] : null) .'
+            '. ( isset($criteria['nsid']) ? ' AND  `user_flickr`.`nsid` = "'.$criteria['nsid'].'"' : null) .'
+             
+        ';
+
+        $items = UserFlickr::find_by_sql($sql);
+
+        $this->response->setData($this->resultsToArray($items));
+        return $this->response;
+    }
+
+    public function createFlickr($params)
+    {
+        try {
+            $object = UserFlickr::create($params);
+        }
+        catch (Exception $e) {
+            print_r($e);
+        }
+        $this->response->setData($object->to_array());
+        return $this->response;
+    }
+
+    public function deleteFlickr($params)
+    {
+
+        try {
+            $object = UserFlickr::find($params['id']);
+            if($object->user_id != $params['user_id']){
+                throw new \Exception ("Invalid user");
+            }
+            $object->delete();
+        }
+        catch (Exception $e) {
+            print_r($e);
+        }
+        $this->response->setData($object->to_array());
+        return $this->response;
+    }
+
+    public function updateFlickr($criteria)
+    {
+        $type = UserFlickr::find($criteria['id']);
         $type->update_attributes($criteria);
 
         $this->response->setData($type->to_array());
