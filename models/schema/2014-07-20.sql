@@ -14,7 +14,20 @@ CREATE TABLE IF NOT EXISTS `user_flickr` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instagram_user_id` (`nsid`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 ALTER TABLE `user_flickr`
   ADD CONSTRAINT `user_flickr_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
+
+
+ALTER TABLE  `activity` CHANGE  `type`  `type` ENUM(  'normal',  'instagram',  'flickr' ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT  'normal';
+
+INSERT INTO  `activity_type` (
+`id` ,
+`name` ,
+`polarity` ,
+`user_id`
+)
+VALUES (
+NULL ,  'Flickr',  '1',  '4'
+);

@@ -263,22 +263,8 @@
 			$media = $instagramClient->getMedia($params['media_id']);
 			$media = $media->data;
 
-
 			Logger::log(json_encode($media));
 
-			//fetch user
-			$userService = new UserService();
-			$userResponse = $userService->find($instagram['user_id']);
-			$user = $userResponse->getData();
-			// Logger::log($user);
-
-			//fetch instagram system activity
-			// $note = "<a href='".$media->link."' target='_blank'>".$media->link."</a> by ".$media->user->username;
-			// foreach ($media->tags as $tag) {
-
-			// }
-
-			// Logger::log($note);
 			$criteria = array(
 				"activity_type_id" => 31,
 				"quantity" => 1,
@@ -289,28 +275,58 @@
 				"date_added" => date("Y-m-d g:i:s a"),
 				"user_id" => $instagram['user_id']
 			);
-			// Logger::log($criteria);
+
+			$activityService = new ActivityService();
+			$response = $activityService->create($criteria);
+
+			$app->response->setBody(json_encode($response));
+		}
+
+	});
+
+	$app->post('/social/activity/flickr', function () use ($app, $configs) {
+
+		$request = $app->request;
+		$params = $request->params();
+
+		$service = new UserService();
+		$flickrResponse = $service->findFlickr(array("nsid"=>$params["social_user_id"]));
+		$flickr = $flickrResponse->getData();
+
+		if(count($flickr) > 0) {
+
+			$flickr = $flickr[0]; 
+			$metadata = new Rezzza\Flickr\Metadata($configs['flickr.key'], $configs['flickr.secret']);
+			$metadata->setOauthAccess($flickr['oauth_token'], $flickr['secret']);
+						// var_dump($metadata); die();
+			$factory  = new Rezzza\Flickr\ApiFactory($metadata, new Rezzza\Flickr\Http\GuzzleAdapter());
+
+			$xml = $factory->call('flickr.photos.getInfo', array(
+					"photo_id" => $params['media_id']
+				)
+			);
+
+			$json = json_encode((array)$xml);
+			$json = str_replace("@attributes", "attributes", $json);
+
+			$criteria = array(
+				"activity_type_id" => 32,
+				"quantity" => 1,
+				"type" => "flickr",
+				"social_user_id" => $params["social_user_id"],
+				"json" => $json,
+				"date_added" => date("Y-m-d g:i:s a"),
+				"user_id" => $flickr['user_id']
+			);
 
 			$activityService = new ActivityService();
 			$response = $activityService->create($criteria);
 
 			$app->response->setBody(json_encode($response));
 
-
-			// Logger::log(json_encode($response));
-			// Logger::log(json_encode($media));
-			// Logger::log($media);
-			// Logger::log($user);
 		}
-		
-
-
 
 	});
-
-
-
-
 
 
 	$app->get('/activity/',  $authenticate($app), function () use ($app) {
