@@ -192,4 +192,65 @@ class UserService extends BaseService
         return $this->response;
     }
 
+    /**
+    * FOURSQUARE
+    */
+
+    public function findFoursquare($criteria)
+    {
+        $sql = '
+        SELECT
+            *
+            FROM  `user_foursquare` 
+            
+            WHERE  1
+            '. ( isset($criteria['user_id']) ? ' AND  `user_foursquare`.`user_id` = '.$criteria['user_id'] : null) .'
+            '. ( isset($criteria['foursquare_user_id']) ? ' AND  `user_foursquare`.`foursquare_user_id` = "'.$criteria['foursquare_user_id'].'"' : null) .'
+             
+        ';
+
+        $items = UserFoursquare::find_by_sql($sql);
+
+        $this->response->setData($this->resultsToArray($items));
+        return $this->response;
+    }
+
+    public function createFoursquare($params)
+    {
+        try {
+            $object = UserFoursquare::create($params);
+        }
+        catch (Exception $e) {
+            print_r($e);
+        }
+        $this->response->setData($object->to_array());
+        return $this->response;
+    }
+
+    public function deleteFoursquare($params)
+    {
+
+        try {
+            $object = UserFoursquare::find($params['id']);
+            if($object->user_id != $params['user_id']){
+                throw new \Exception ("Invalid user");
+            }
+            $object->delete();
+        }
+        catch (Exception $e) {
+            print_r($e);
+        }
+        $this->response->setData($object->to_array());
+        return $this->response;
+    }
+
+    public function updateFoursquare($criteria)
+    {
+        $type = UserFoursquare::find($criteria['id']);
+        $type->update_attributes($criteria);
+
+        $this->response->setData($type->to_array());
+        return $this->response;
+    }    
+
 }

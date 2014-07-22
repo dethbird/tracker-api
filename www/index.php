@@ -158,6 +158,9 @@
 		$flickrResponse = $service->findFlickr(array("user_id"=>$user['id']));
 		$responseBody->flickr = $flickrResponse->data;
 
+		$foursquareResponse = $service->findFoursquare(array("user_id"=>$user['id']));
+		$responseBody->foursquare = $foursquareResponse->data;
+
 
 		$response->setData($responseBody);
 
@@ -176,6 +179,8 @@
 			$response = $service->deleteInstagram(array_merge(array("user_id"=>$user['id']), $request->params()));
 		} elseif ($request->params('type')=="flickr") {
 			$response = $service->deleteFlickr(array_merge(array("user_id"=>$user['id']), $request->params()));
+		} elseif ($request->params('type')=="foursquare") {
+			$response = $service->deleteFoursquare(array_merge(array("user_id"=>$user['id']), $request->params()));
 		}
 
 		$app->response->setBody(json_encode($response));
@@ -243,6 +248,36 @@
 
 	});	
 
+	$app->post('/user/foursquare', $authenticate($app),  function () use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new UserService();
+
+		// find foursquare
+		$foursquareResponse = $service->findFoursquare(array("foursquare_user_id" => $request->params("foursquare_user_id")));
+
+		if(count($foursquareResponse->data)<1){
+			//create
+			$response = $service->createFoursquare(array_merge(array("user_id"=>$user['id']), $request->params()));
+			$app->response->setBody(json_encode($response));
+		} else {
+			//belongs to this user?
+			if($user['id'] != $foursquareResponse->data[0]['user_id']){
+				$app->response->setStatus(403);
+				$app->stop();
+			}
+
+			$params = $request->params();
+			$params['user_id'] = $user['id'];
+			$params['id'] = $foursquareResponse->data[0]['id'];
+
+			$response = $service->updateFoursquare($params);
+			$app->response->setBody(json_encode($response));
+		}
+
+	});	
+
 	// /social/activity/instagram
 	$app->post('/social/activity/instagram', function () use ($app, $instagramClient) {
 
@@ -263,7 +298,7 @@
 			$media = $instagramClient->getMedia($params['media_id']);
 			$media = $media->data;
 
-			Logger::log(json_encode($media));
+			// Logger::log(json_encode($media));
 
 			$criteria = array(
 				"activity_type_id" => 31,
