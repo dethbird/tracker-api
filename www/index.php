@@ -42,6 +42,7 @@
 	require '../vendor/autoload.php';
 	require_once '../vendor/php-activerecord/php-activerecord/ActiveRecord.php';
 	require_once '../src/logger.php';
+	use Jcroll\FoursquareApiClient\Client\FoursquareClient;	
 
 	ActiveRecord\Config::initialize(function($cfg)
  	{
@@ -359,6 +360,47 @@
 
 			$app->response->setBody(json_encode($response));
 
+		}
+
+	});
+
+	// /social/activity/foursquare
+	$app->post('/social/activity/foursquare', function () use ($app, $configs) {
+
+		$request = $app->request;
+		$params = $request->params();
+
+		//fetch the foursquare account
+		$service = new UserService();
+		$foursquareResponse = $service->findFoursquare(array("foursquare_user_id"=>$params["social_user_id"]));
+		$foursquare = $foursquareResponse->getData();
+
+		if(count($foursquare) > 0) {
+
+			$client = FoursquareClient::factory(array(
+			    'client_id'     => $configs['foursquare.key'],
+			    'client_secret' => $configs['foursquare.secret']
+			));
+			$client->addToken($foursquare[0]['access_token']);
+			$command = $client->getCommand('checkins', array("checkin_id" => $params["media_id"]));
+			$result = $command->execute();
+			$result = $result['response'];
+
+			$criteria = array(
+				"activity_type_id" => 33,
+				"quantity" => 1,
+				// "note" => $note,
+				"type" => "foursquare",
+				"social_user_id" => $params["social_user_id"],
+				"json" => json_encode($result),
+				"date_added" => date("Y-m-d g:i:s a"),
+				"user_id" => $foursquare[0]['user_id']
+			);
+
+			$activityService = new ActivityService();
+			$response = $activityService->create($criteria);
+
+			$app->response->setBody(json_encode($response));
 		}
 
 	});

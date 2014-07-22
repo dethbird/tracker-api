@@ -15,4 +15,14 @@ CREATE TABLE IF NOT EXISTS `user_foursquare` (
 ALTER TABLE `user_foursquare`
   ADD CONSTRAINT `user_foursquare_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
 
-  
+INSERT INTO  `activity_type` (
+`id` ,
+`name` ,
+`polarity` ,
+`user_id`
+)
+VALUES (
+NULL ,  'Foursquare',  '1',  '4'
+);
+
+ALTER TABLE  `activity` CHANGE  `type`  `type` ENUM(  'normal',  'instagram',  'flickr',  'foursquare' ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT  'normal';

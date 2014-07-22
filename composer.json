@@ -4,6 +4,7 @@
         "php-activerecord/php-activerecord": "1.1.x",
         "cosenary/instagram": "dev-master",
         "guzzlehttp/guzzle": "3.8.1",
-        "rezzza/flickr": "dev-master"
+        "rezzza/flickr": "dev-master",
+        "jcroll/foursquare-api-client": "dev-master"
     }
 }
