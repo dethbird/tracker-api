@@ -19,5 +19,10 @@ ALTER TABLE  `goal` ADD FOREIGN KEY (  `activity_type_id` ) REFERENCES  `activit
 
 ALTER TABLE  `activity` ADD  `social_media_id` VARCHAR( 255 ) NULL DEFAULT NULL AFTER  `social_user_id` ,
 ADD INDEX (  `social_media_id` );
+
 ALTER TABLE  `activity` ADD  `date_updated` DATETIME NULL DEFAULT NULL AFTER  `date_added`;
 
+
+ALTER TABLE  `activity` CHANGE  `type`  `type` ENUM(  'normal',  'socialmedia' ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT  'normal';
+
+UPDATE `activity` SET `type` = 'socialmedia' WHERE `type` = "";

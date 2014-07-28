@@ -56,8 +56,9 @@
 
 				if($activity->type=="flickr") {
 					
-					print_r($json); die();
+					// print_r($json); die();
 					// print_r(date("Y-m-d g:i:s A", $json->checkin->createdAt)); die();
+					$activity->date_added = date("Y-m-d g:i:s A", $json->photo->dates->attributes->posted);
 					$activity->social_media_id = $json->photo->attributes->id;
 				}
 
@@ -69,15 +70,15 @@
 
 				if($activity->type=="instagram") {
 					// print_r($json); die();
-					// print_r(date("Y-m-d g:i:s A", $json->created_time)); die();
+					$activity->date_added = date("Y-m-d g:i:s A", $json->created_time);
 					$activity->social_media_id = $json->id;
 				}
 				// $activity->update();
 				// print_r($activity->to_array());
 
-				// $response = $activityService->update($activity->to_array());
+				$response = $activityService->update($activity->to_array());
 
-				// print_r($response);
+				print_r($response);
 			}
 				
 			

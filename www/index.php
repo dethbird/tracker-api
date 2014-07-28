@@ -305,8 +305,9 @@
 				"activity_type_id" => 31,
 				"quantity" => 1,
 				// "note" => $note,
-				"type" => "instagram",
+				"type" => "socialmedia",
 				"social_user_id" => $params["social_user_id"],
+				"social_media_id" => $params["media_id"],
 				"json" => json_encode($media),
 				"date_added" => date("Y-m-d g:i:s a"),
 				"user_id" => $instagram['user_id']
@@ -348,8 +349,9 @@
 			$criteria = array(
 				"activity_type_id" => 32,
 				"quantity" => 1,
-				"type" => "flickr",
+				"type" => "socialmedia",
 				"social_user_id" => $params["social_user_id"],
+				"social_media_id" => $params["media_id"],
 				"json" => $json,
 				"date_added" => date("Y-m-d g:i:s a"),
 				"user_id" => $flickr['user_id']
@@ -390,8 +392,9 @@
 				"activity_type_id" => 33,
 				"quantity" => 1,
 				// "note" => $note,
-				"type" => "foursquare",
+				"type" => "socialmedia",
 				"social_user_id" => $params["social_user_id"],
+				"social_media_id" => $params["media_id"],
 				"json" => json_encode($result),
 				"date_added" => date("Y-m-d g:i:s a"),
 				"user_id" => $foursquare[0]['user_id']
