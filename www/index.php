@@ -13,6 +13,13 @@
 	define("APPLICATION_PATH", __DIR__ . "/..");
 	date_default_timezone_set('America/New_York');
 
+	// Ensure src/ is on include_path
+	set_include_path(implode(PATH_SEPARATOR, array(
+		APPLICATION_PATH ,
+	    APPLICATION_PATH . '/src',
+	    get_include_path(),
+	)));
+
 	//read env file
 	// # just points to environment config yml
 	global $app,
@@ -23,12 +30,7 @@
 	$env = parse_ini_file("env.ini");
 	$configs = parse_ini_file($env['config_file']);
 
-	// Ensure src/ is on include_path
-	set_include_path(implode(PATH_SEPARATOR, array(
-		APPLICATION_PATH ,
-	    APPLICATION_PATH . '/src',
-	    get_include_path(),
-	)));
+
 
 	/**
 	* __________               __                                
