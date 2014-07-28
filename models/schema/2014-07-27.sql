@@ -13,3 +13,11 @@ ALTER TABLE  `activity` ADD FOREIGN KEY (  `activity_type_id` ) REFERENCES  `act
 ALTER TABLE  `goal` ADD FOREIGN KEY (  `activity_type_id` ) REFERENCES  `activity_type` (
 `id`
 ) ON DELETE RESTRICT ON UPDATE RESTRICT ;
+
+
+#-- social media id
+
+ALTER TABLE  `activity` ADD  `social_media_id` VARCHAR( 255 ) NULL DEFAULT NULL AFTER  `social_user_id` ,
+ADD INDEX (  `social_media_id` );
+ALTER TABLE  `activity` ADD  `date_updated` DATETIME NULL DEFAULT NULL AFTER  `date_added`;
+

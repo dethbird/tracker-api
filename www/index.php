@@ -20,7 +20,7 @@
 		$user,
 		$instagramClient;
 
-	$env = parse_ini_file("../env.ini");
+	$env = parse_ini_file("env.ini");
 	$configs = parse_ini_file($env['config_file']);
 
 	// Ensure src/ is on include_path
@@ -39,9 +39,9 @@
 	*         \/                        \/             \/|__|    
 	*/
 
-	require '../vendor/autoload.php';
-	require_once '../vendor/php-activerecord/php-activerecord/ActiveRecord.php';
-	require_once '../src/logger.php';
+	require 'vendor/autoload.php';
+	require_once 'vendor/php-activerecord/php-activerecord/ActiveRecord.php';
+	require_once 'src/logger.php';
 	use Jcroll\FoursquareApiClient\Client\FoursquareClient;	
 
 	ActiveRecord\Config::initialize(function($cfg)
