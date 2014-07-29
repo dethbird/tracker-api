@@ -26,3 +26,16 @@ ALTER TABLE  `activity` ADD  `date_updated` DATETIME NULL DEFAULT NULL AFTER  `d
 ALTER TABLE  `activity` CHANGE  `type`  `type` ENUM(  'normal',  'socialmedia' ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT  'normal';
 
 UPDATE `activity` SET `type` = 'socialmedia' WHERE `type` = "";
+
+
+ALTER TABLE  `activity` CHANGE  `social_user_id`  `social_user_id` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+ALTER TABLE  `activity` CHANGE  `social_media_id`  `social_media_id` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+
+
+UPDATE `activity` SET social_user_id = NULL WHERE social_user_id = "";
+UPDATE `activity` SET social_media_id = NULL WHERE social_media_id = "";
+
+ALTER TABLE  `activity` ADD UNIQUE (
+`social_user_id` ,
+`social_media_id`
+);
