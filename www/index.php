@@ -167,7 +167,6 @@
 		$githubResponse = $service->findGithub(array("user_id"=>$user['id']));
 		$responseBody->github = $githubResponse->data;
 
-
 		$response->setData($responseBody);
 
 		$app->response->setBody(json_encode($response));
@@ -435,6 +434,50 @@
 				"json" => json_encode($result),
 				"date_added" => date("Y-m-d g:i:s a"),
 				"user_id" => $foursquare[0]['user_id']
+			);
+
+			$activityService = new ActivityService();
+			$response = $activityService->create($criteria);
+
+			$app->response->setBody(json_encode($response));
+		}
+
+	});
+
+	// /social/activity/instagram
+	$app->post('/social/activity/github', function () use ($app) {
+
+		$request = $app->request;
+		$params = $request->params();
+		
+		//fetch the github account
+		$service = new UserService();
+		$githubResponse = $service->findGithub(array("username"=>$params["social_user_id"]));
+
+
+		$github = $githubResponse->getData();
+
+		if(count($github) > 0) {
+
+			$github = $github[0];
+			// $githubClient->setAccessToken($github['access_token']);
+
+			//get media
+			// $media = $githubClient->getMedia($params['media_id']);
+			// $media = $media->data;
+
+			// Logger::log(json_encode($media));
+
+			$criteria = array(
+				"activity_type_id" => 34,
+				"quantity" => 1,
+				// "note" => $note,
+				"type" => "socialmedia",
+				"social_user_id" => $params["social_user_id"],
+				"social_media_id" => $params["media_id"],
+				"json" => $params["json"],
+				"date_added" => date("Y-m-d g:i:s a"),
+				"user_id" => $github['user_id']
 			);
 
 			$activityService = new ActivityService();

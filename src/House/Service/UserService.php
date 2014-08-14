@@ -145,6 +145,7 @@ class UserService extends BaseService
             WHERE  1
             '. ( isset($criteria['user_id']) ? ' AND  `user_github`.`user_id` = '.$criteria['user_id'] : null) .'
             '. ( isset($criteria['github_user_id']) ? ' AND  `user_github`.`github_user_id` = "'.$criteria['github_user_id'].'"' : null) .'
+            '. ( isset($criteria['username']) ? ' AND  UPPER(`user_github`.`username`) = "'.strtoupper($criteria['username']).'"' : null) .'
              
         ';
 
