@@ -164,6 +164,9 @@
 		$foursquareResponse = $service->findFoursquare(array("user_id"=>$user['id']));
 		$responseBody->foursquare = $foursquareResponse->data;
 
+		$githubResponse = $service->findGithub(array("user_id"=>$user['id']));
+		$responseBody->github = $githubResponse->data;
+
 
 		$response->setData($responseBody);
 
@@ -184,6 +187,8 @@
 			$response = $service->deleteFlickr(array_merge(array("user_id"=>$user['id']), $request->params()));
 		} elseif ($request->params('type')=="foursquare") {
 			$response = $service->deleteFoursquare(array_merge(array("user_id"=>$user['id']), $request->params()));
+		} elseif ($request->params('type')=="github") {
+			$response = $service->deleteGithub(array_merge(array("user_id"=>$user['id']), $request->params()));
 		}
 
 		$app->response->setBody(json_encode($response));
@@ -280,6 +285,36 @@
 		}
 
 	});	
+
+	$app->post('/user/github', $authenticate($app),  function () use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new UserService();
+
+		// find github
+		$githubResponse = $service->findGithub(array("github_user_id" => $request->params("github_user_id")));
+
+		if(count($githubResponse->data)<1){
+			//create
+			$response = $service->createGithub(array_merge(array("user_id"=>$user['id']), $request->params()));
+			$app->response->setBody(json_encode($response));
+		} else {
+			//belongs to this user?
+			if($user['id'] != $githubResponse->data[0]['user_id']){
+				$app->response->setStatus(403);
+				$app->stop();
+			}
+
+			$params = $request->params();
+			$params['user_id'] = $user['id'];
+			$params['id'] = $githubResponse->data[0]['id'];
+
+			$response = $service->updateGithub($params);
+			$app->response->setBody(json_encode($response));
+		}
+
+	});		
 
 	// /social/activity/instagram
 	$app->post('/social/activity/instagram', function () use ($app, $instagramClient) {

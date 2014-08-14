@@ -132,6 +132,67 @@ class UserService extends BaseService
     }
 
     /**
+    * GITHUB
+    */
+
+    public function findGithub($criteria)
+    {
+        $sql = '
+        SELECT
+            *
+            FROM  `user_github` 
+            
+            WHERE  1
+            '. ( isset($criteria['user_id']) ? ' AND  `user_github`.`user_id` = '.$criteria['user_id'] : null) .'
+            '. ( isset($criteria['github_user_id']) ? ' AND  `user_github`.`github_user_id` = "'.$criteria['github_user_id'].'"' : null) .'
+             
+        ';
+
+        $items = UserGithub::find_by_sql($sql);
+
+        $this->response->setData($this->resultsToArray($items));
+        return $this->response;
+    }
+
+    public function createGithub($params)
+    {
+        try {
+            $object = UserGithub::create($params);
+        }
+        catch (Exception $e) {
+            print_r($e);
+        }
+        $this->response->setData($object->to_array());
+        return $this->response;
+    }
+
+    public function deleteGithub($params)
+    {
+
+        try {
+            $object = UserGithub::find($params['id']);
+            if($object->user_id != $params['user_id']){
+                throw new \Exception ("Invalid user");
+            }
+            $object->delete();
+        }
+        catch (Exception $e) {
+            print_r($e);
+        }
+        $this->response->setData($object->to_array());
+        return $this->response;
+    }
+
+    public function updateGithub($criteria)
+    {
+        $type = UserGithub::find($criteria['id']);
+        $type->update_attributes($criteria);
+
+        $this->response->setData($type->to_array());
+        return $this->response;
+    }    
+
+    /**
     * FLICKR
     */
 
