@@ -700,6 +700,26 @@
 		
 	});
 
+	$app->get('/feeds/users/:name', function ($name) use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$params = $request->params();
+		$service = new ActivityService();
+
+		$response = $service->userFeed(array_merge(
+			array(
+				"name"=>$name,
+				"public"=>1
+			), 
+			$request->params()
+		));
+
+		$app->response->setBody(json_encode($response));
+		
+	});
+
+
 
 
 	/**

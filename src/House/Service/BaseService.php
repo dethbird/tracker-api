@@ -29,6 +29,7 @@ class BaseService
             }
             if(isset($item->json)){
                 $obj['json_decoded'] = json_decode($item->json);
+                unset($obj['json']);
             }
     		$response[] = $obj;
     	}

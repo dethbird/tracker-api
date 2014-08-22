@@ -21,6 +21,7 @@ class ActivityService extends BaseService
             `activity`.social_media_id,
             `activity`.type,
             `activity`.json,
+            `activity`.public,
             `activity`.date_added,
             `activity_type`.name,
             `activity_type`.polarity,
@@ -30,6 +31,7 @@ class ActivityService extends BaseService
             LEFT JOIN `goal` ON `goal`.`activity_type_id` = `activity_type`.`id`
             WHERE  `activity`.`user_id` = '.$criteria['user_id'].'
             '. ( isset($criteria['id']) ? ' AND  `activity`.`id` = '.$criteria['id'] : null) .'
+            '. ( isset($criteria['public']) ? ' AND  `activity`.`public`= '. $criteria['public'] : null) .' 
             '. ( isset($criteria['start_date']) ? ' AND  `activity`.`date_added` >= "'.date("Y-m-d g:i:s", $criteria['start_date']).'"' : null) .' 
              
             GROUP BY `activity`.`id`
@@ -39,6 +41,7 @@ class ActivityService extends BaseService
         $activities = Activity::find_by_sql($sql);
 
         $this->response->setData($this->resultsToArray($activities));
+
         return $this->response;
     }
 
@@ -124,6 +127,23 @@ class ActivityService extends BaseService
         return $this->response;
     }
 
+    public function userFeed($criteria)
+    {
+        if(!isset($criteria['name'])) {
+            echo '{status:"error", message:"user name must be provided"}';
+            return false;
+        }
+        $users = User::find_by_sql('
+            SELECT * FROM `user` WHERE UPPER(name) = "'. strtoupper($criteria['name']) .'";
+        ');
+        if(count($users)<1){
+            echo '{status:"error", message:"user not found"}';
+            return false;
+        }
+        $criteria['user_id'] = $users[0]->id;
+        return $this->find($criteria);
+    }
+
     public function report($criteria)
     {
         $activities = Activity::find_by_sql('
@@ -203,6 +223,7 @@ class ActivityService extends BaseService
                     "social_user_id" => $activity->social_user_id,
                     "json_decoded" => json_decode($activity->json),
                     "has_goal" => $activity->has_goal,
+                    "public" => $activity->public,
                     "date_added" => $activity->date_added
                 );
 
