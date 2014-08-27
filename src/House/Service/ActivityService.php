@@ -7,8 +7,16 @@ require_once("House/Service/GoalService.php");
 class ActivityService extends BaseService
 {
 
-    public function find($criteria = array())
+    public function getFindSQL($criteria)
     {
+        // if(!isset($criteria['from_date'])) {
+        //     $criteria['from_date'] = strtotime("+1 day", strtotime(date("Y-m-d")));
+        // }
+
+        // if(!isset($criteria['to_date'])) {
+        //     $criteria['to_date'] = strtotime("-7 day", strtotime(date("Y-m-d")));
+        // }
+
 
         $sql = '
             SELECT 
@@ -30,13 +38,32 @@ class ActivityService extends BaseService
             LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id`
             LEFT JOIN `goal` ON `goal`.`activity_type_id` = `activity_type`.`id`
             WHERE  `activity`.`user_id` = '.$criteria['user_id'].'
+            
             '. ( isset($criteria['id']) ? ' AND  `activity`.`id` = '.$criteria['id'] : null) .'
+            
             '. ( isset($criteria['public']) ? ' AND  `activity`.`public`= '. $criteria['public'] : null) .' 
-            '. ( isset($criteria['start_date']) ? ' AND  `activity`.`date_added` >= "'.date("Y-m-d g:i:s", $criteria['start_date']).'"' : null) .' 
-             
+            
+            '. ( isset($criteria['from_date']) ? 'AND `activity`.date_added <= "'. $criteria['from_date'] .'"' : null) .' 
+            
+            '. ( isset($criteria['to_date']) ? 'AND `activity`.date_added >= "'. $criteria['to_date'] .'"' : null) .' 
+            
             GROUP BY `activity`.`id`
-            ORDER BY  `activity`.`date_added` DESC 
+            ORDER BY  `activity`.`date_added` DESC
+            ;
         ';
+
+
+        // echo $sql;
+        // die();
+
+
+        return $sql;
+    }
+
+    public function find($criteria = array())
+    {
+
+        $sql = $this->getFindSQL($criteria);
 
         $activities = Activity::find_by_sql($sql);
 
@@ -146,18 +173,13 @@ class ActivityService extends BaseService
 
     public function report($criteria)
     {
-        $activities = Activity::find_by_sql('
-            SELECT 
-            `activity`.*,  
-            `activity_type`.name, 
-            `activity_type`.polarity,
-            IF(`goal`.`id` IS NULL,NULL,"Y") as has_goal
-            FROM  `activity` 
-            LEFT JOIN  `activity_type` ON  `activity`.`activity_type_id` =  `activity_type`.`id`
-            LEFT JOIN `goal` ON `goal`.`activity_type_id` = `activity_type`.`id`
-            WHERE  `activity`.`user_id` = '.$criteria['user_id'].'
-            ORDER BY  `activity`.`date_added` ASC
-        ');
+
+        $sql = $this->getFindSQL($criteria);
+
+        // echo $sql; 
+        // die();
+
+        $activities = Activity::find_by_sql($sql);
 
         $goals = GoalService::find($criteria);
         $goalsByActivity = array();
@@ -184,6 +206,7 @@ class ActivityService extends BaseService
                 "bad" => null
             );
 
+            $activities = array_reverse($activities);
             foreach ($activities as $activity ){
 
                 // TIMEFRAME STATS

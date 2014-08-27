@@ -489,11 +489,25 @@
 	});
 
 
-	$app->get('/activity/',  $authenticate($app), function () use ($app) {
+	$app->get('/activity',  $authenticate($app), function () use ($app) {
 		global $user;
 
 		$request = $app->request;
 		$service = new ActivityService();
+
+		$response = $service->find(array_merge(array("user_id"=>$user['id']), $request->params()));
+
+		$app->response->setBody(json_encode($response));
+		
+	});
+
+	$app->get('/activity/report',  $authenticate($app), function () use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new ActivityService();
+
+		var_dump($request->params()); die();
 
 		$response = $service->find(array_merge(array("user_id"=>$user['id']), $request->params()));
 
@@ -687,7 +701,7 @@
 
 		$request = $app->request;
 		$service = new ActivityService();
-
+		// var_dump($request->params()); die();
 		$response = $service->report(array_merge(
 			array(
 				"user_id"=>$user['id'],
@@ -699,6 +713,8 @@
 		$app->response->setBody(json_encode($response));
 		
 	});
+
+
 
 	$app->get('/feeds/users/:name', function ($name) use ($app) {
 		global $user;
