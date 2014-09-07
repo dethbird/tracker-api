@@ -191,7 +191,70 @@ class UserService extends BaseService
 
         $this->response->setData($type->to_array());
         return $this->response;
-    }    
+    }
+
+
+    /**
+    * Twitter
+    */
+
+    public function findTwitter($criteria)
+    {
+        $sql = '
+        SELECT
+            *
+            FROM  `user_twitter` 
+            
+            WHERE  1
+            '. ( isset($criteria['user_id']) ? ' AND  `user_twitter`.`user_id` = '.$criteria['user_id'] : null) .'
+            '. ( isset($criteria['twitter_user_id']) ? ' AND  `user_twitter`.`twitter_user_id` = "'.$criteria['twitter_user_id'].'"' : null) .'
+            '. ( isset($criteria['username']) ? ' AND  UPPER(`user_twitter`.`username`) = "'.strtoupper($criteria['username']).'"' : null) .'
+             
+        ';
+
+        $items = UserTwitter::find_by_sql($sql);
+
+        $this->response->setData($this->resultsToArray($items));
+        return $this->response;
+    }
+
+    public function createTwitter($params)
+    {
+        try {
+            $object = UserTwitter::create($params);
+        }
+        catch (Exception $e) {
+            print_r($e);
+        }
+        $this->response->setData($object->to_array());
+        return $this->response;
+    }
+
+    public function deleteTwitter($params)
+    {
+
+        try {
+            $object = UserTwitter::find($params['id']);
+            if($object->user_id != $params['user_id']){
+                throw new \Exception ("Invalid user");
+            }
+            $object->delete();
+        }
+        catch (Exception $e) {
+            print_r($e);
+        }
+        $this->response->setData($object->to_array());
+        return $this->response;
+    }
+
+    public function updateTwitter($criteria)
+    {
+        $type = UserTwitter::find($criteria['id']);
+        $type->update_attributes($criteria);
+
+        $this->response->setData($type->to_array());
+        return $this->response;
+    } 
 
     /**
     * FLICKR

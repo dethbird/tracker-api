@@ -166,6 +166,9 @@
 
 		$githubResponse = $service->findGithub(array("user_id"=>$user['id']));
 		$responseBody->github = $githubResponse->data;
+		
+		$twitterResponse = $service->findTwitter(array("user_id"=>$user['id']));
+		$responseBody->twitter = $twitterResponse->data;
 
 		$response->setData($responseBody);
 
@@ -188,7 +191,10 @@
 			$response = $service->deleteFoursquare(array_merge(array("user_id"=>$user['id']), $request->params()));
 		} elseif ($request->params('type')=="github") {
 			$response = $service->deleteGithub(array_merge(array("user_id"=>$user['id']), $request->params()));
+		} elseif ($request->params('type')=="twitter") {
+			$response = $service->deleteTwitter(array_merge(array("user_id"=>$user['id']), $request->params()));
 		}
+
 
 		$app->response->setBody(json_encode($response));
 
@@ -310,6 +316,37 @@
 			$params['id'] = $githubResponse->data[0]['id'];
 
 			$response = $service->updateGithub($params);
+			$app->response->setBody(json_encode($response));
+		}
+
+	});		
+
+
+	$app->post('/user/twitter', $authenticate($app),  function () use ($app) {
+		global $user;
+
+		$request = $app->request;
+		$service = new UserService();
+
+		// find twitter
+		$twitterResponse = $service->findTwitter(array("twitter_user_id" => $request->params("twitter_user_id")));
+
+		if(count($twitterResponse->data)<1){
+			//create
+			$response = $service->createTwitter(array_merge(array("user_id"=>$user['id']), $request->params()));
+			$app->response->setBody(json_encode($response));
+		} else {
+			//belongs to this user?
+			if($user['id'] != $twitterResponse->data[0]['user_id']){
+				$app->response->setStatus(403);
+				$app->stop();
+			}
+
+			$params = $request->params();
+			$params['user_id'] = $user['id'];
+			$params['id'] = $twitterResponse->data[0]['id'];
+
+			$response = $service->updateTwitter($params);
 			$app->response->setBody(json_encode($response));
 		}
 
