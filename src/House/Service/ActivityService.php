@@ -41,6 +41,8 @@ class ActivityService extends BaseService
             
             '. ( isset($criteria['id']) ? ' AND  `activity`.`id` = '.$criteria['id'] : null) .'
             
+            '. ( isset($criteria['social_media_id']) ? ' AND  `activity`.`social_media_id` = '.$criteria['social_media_id'] : null) .'
+            
             '. ( isset($criteria['public']) ? ' AND  `activity`.`public`= '. $criteria['public'] : null) .' 
             
             '. ( isset($criteria['from_date']) ? 'AND `activity`.date_added <= "'. $criteria['from_date'] .'"' : null) .' 

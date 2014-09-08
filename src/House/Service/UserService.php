@@ -1,6 +1,7 @@
 <?php
 require_once("models/User.php");
 require_once("models/UserInstagram.php");
+require_once("models/UserTwitter.php");
 require_once("House/Service/BaseService.php");
 
 class UserService extends BaseService
@@ -211,6 +212,7 @@ class UserService extends BaseService
             '. ( isset($criteria['username']) ? ' AND  UPPER(`user_twitter`.`username`) = "'.strtoupper($criteria['username']).'"' : null) .'
              
         ';
+
 
         $items = UserTwitter::find_by_sql($sql);
 

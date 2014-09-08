@@ -12,3 +12,14 @@ CREATE TABLE IF NOT EXISTS `user_twitter` (
   UNIQUE KEY `instagram_user_id` (`twitter_user_id`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+
+INSERT INTO  `tracker`.`activity_type` (
+`id` ,
+`name` ,
+`polarity` ,
+`user_id`
+)
+VALUES (
+35 ,  'Twitter',  '1',  '4'
+);
