@@ -553,12 +553,13 @@
 	});
 
 	$app->get('/activity/type', $authenticate($app), function () use ($app) {
+
 		global $user;
 
 		$request = $app->request;
 		$service = new ActivityService();
-
-		$response = $service->findType(array("user_id"=>$user['id']));
+		// Logger::log($request->params());
+		$response = $service->findType(array_merge(array("user_id"=>$user['id']), $request->params()));
 
 		$app->response->setBody(json_encode($response));
 

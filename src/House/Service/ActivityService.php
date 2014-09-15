@@ -42,6 +42,8 @@ class ActivityService extends BaseService
             '. ( isset($criteria['id']) ? ' AND  `activity`.`id` = '.$criteria['id'] : null) .'
             
             '. ( isset($criteria['social_media_id']) ? ' AND  `activity`.`social_media_id` = '.$criteria['social_media_id'] : null) .'
+
+            '. ( isset($criteria['activity_type_id']) ? ' AND  `activity`.`activity_type_id` = '.$criteria['activity_type_id'] : null) .'
             
             '. ( isset($criteria['public']) ? ' AND  `activity`.`public`= '. $criteria['public'] : null) .' 
             
@@ -86,6 +88,12 @@ class ActivityService extends BaseService
         if(isset($criteria['user_id'])){
             $conditionString .= " AND user_id = ?";
             $conditionBindings[] = $criteria['user_id'];
+        }
+        if(isset($criteria['system'])){
+            if($criteria['system']=="true"){
+                $conditionString .= " OR user_id = ?";
+                $conditionBindings[] = 4;
+            }
         }
 
 
